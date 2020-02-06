@@ -81,7 +81,7 @@
        
 <h2 itemprop="name">
   <a class="article-title" href="/2020/02/06/vue/"
-    >vue</a
+    >搭建vue项目</a
   >
 </h2>
   
@@ -110,14 +110,25 @@
       
 
       
-      <p><img src="/2020/02/06/vue/vue.png" alt="vue"></p>
+      <p><img src="/2020/02/06/vue/vue.png" alt="vue"><br>Vue (读音 /vjuː/，类似于 view) 是一套用于构建用户界面的渐进式框架。与其它大型框架不同的是，Vue 被设计为可以自底向上逐层应用。Vue 的核心库只关注视图层，不仅易于上手，还便于与第三方库或既有项目整合。另一方面，当与现代化的工具链以及各种支持类库结合使用时，Vue 也完全能够为复杂的单页应用提供驱动。<br>想学习vue的朋友可以到vue官网上阅读文档 <a href="https://cn.vuejs.org/" target="_blank" rel="noopener">vue官网</a></p>
+<p>下面就是搭建vue项目的过程，前提要安装了node.js和包管理工具</p>
+<h5 id="1-安装vue-cli-3-0"><a href="#1-安装vue-cli-3-0" class="headerlink" title="1.安装vue-cli 3.0"></a>1.安装vue-cli 3.0</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g @vue/cli</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line">yarn global add @vue/cli</span><br></pre></td></tr></table></figure>
+<p>安装成功后查看版本：vue -V(大写的V)<br><img src="/2020/02/06/vue/vue10.png" alt="vue"></p>
+<h5 id="2-创建项目"><a href="#2-创建项目" class="headerlink" title="2.创建项目"></a>2.创建项目</h5><p>（project-name）是你项目名字<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vue create project-name</span><br></pre></td></tr></table></figure></p>
+<p>选择时候按空格选<br>my-default 是 我原来保存好的模板；</p>
+<p>default 是 使用默认配置 </p>
+<p>Manually select features 是 自定义配置  （一般选这个）<br><img src="/2020/02/06/vue/vue1.png" alt="vue"></p>
+<h5 id="3-选择配置（自定义配置）"><a href="#3-选择配置（自定义配置）" class="headerlink" title="3.选择配置（自定义配置）"></a>3.选择配置（自定义配置）</h5><p>1.选择css预编译，这里我选择less<br>2.语法检测工具，这里我选择ESLint + Standard config<br>3.选择语法检查方式，这里我选择保存就检测<br>4.接下来会问你把babel,postcss,eslint这些配置文件放哪，这里随便选，我选择放在独立文件夹<br><img src="/2020/02/06/vue/vue6.png" alt="vue"><br>5.键入N不记录，如果键入Y需要输入保存名字<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">? Please pick a preset: Manually select features</span><br><span class="line">? Check the features needed <span class="keyword">for</span> your project: Router, Vuex, CSS Pre-processors, Linter, Unit</span><br><span class="line">? Pick a CSS pre-processor (PostCSS, Autoprefixer and CSS Modules are supported by default): Stylus</span><br><span class="line">? Pick a linter / formatter config: Prettier</span><br><span class="line">? Pick additional lint features: Lint on save</span><br><span class="line">? Pick a unit testing solution: Jest</span><br><span class="line">? Where <span class="keyword">do</span> you prefer placing config <span class="keyword">for</span> Babel, PostCSS, ESLint, etc.? In dedicated config files</span><br><span class="line">? Save this as a preset <span class="keyword">for</span> future projects? (Y/n) // 是否记录一下以便下次继续使用这套配置。</span><br></pre></td></tr></table></figure><br>确定后，等待下载依赖模块<br><img src="/2020/02/06/vue/vue7.png" alt="vue"><br>项目创建好后</p>
+<h5 id="4-运行"><a href="#4-运行" class="headerlink" title="4.运行"></a>4.运行</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm run serve</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/02/06/vue/vue8.png" alt="vue"><br>打开浏览器 输入  <a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a><br><img src="/2020/02/06/vue/vue9.png" alt="vue"></p>
+<p>到此结束，vue项目就创建完啦</p>
 
       
       <!-- 打赏 -->
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/06/vue/" data-id="ck6anxgt00000k4ut6kl14hfp"
+      <a data-url="http://yoursite.com/2020/02/06/vue/" data-id="ck6aq1mie00006kutbptl1g5k"
         class="article-share-link">分享</a>
         
       
@@ -212,7 +223,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/02/05/BuildHexo/" data-id="ck6anxgut0001k4utbllidl4o"
+      <a data-url="http://yoursite.com/2020/02/05/BuildHexo/" data-id="ck6aq1mjy00016kuta1697my6"
         class="article-share-link">分享</a>
         
       
