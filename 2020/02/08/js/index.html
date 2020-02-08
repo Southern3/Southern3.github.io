@@ -1,0 +1,377 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="John Dxx">
+  
+  
+  
+  
+    <meta name="description" content="古语说的好，长江后浪推前浪。作为一名程序员，我一直很偏爱JavaScript，不为什么，就是因为强大。但是，TypeScript的出现，与之形成对比，让我不得不开始考虑TypeScript，下面我就为大家解析一下我为什么要开始用TypeScript。JavaScript可能是一种事实上的现代Web开发语言，它也是我一直是我选择用来编写脚本的语言。用Python编写代码很有趣，但是如果我有一些...">
+  
+  <title>TypeScript 让你不会想用回 JavaScript [ 南在南方_3 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/hollow.ico">
+  
+  
+  
+<link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+<div class="side-navigate hide-area">
+  
+  
+    <div class="item next">
+      <a href="/2020/02/06/gameAll/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        小游戏集合
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onClick="openUserCard()">
+          <img id="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg"/>
+          <div id="homelink">南在南方_3</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/tags">Tags</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/about">About</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  
+
+  <article id="post">
+    <h1>TypeScript 让你不会想用回 JavaScript</h1>
+    <p class="page-title-sub">
+      <span id = "post-title-date">Created at 2020-02-08</span>
+      
+        <span id = "post-title-updated">Updated at 2020-02-08</span>
+      
+      
+      
+    </p>
+    
+    <p>古语说的好，长江后浪推前浪。作为一名程序员，我一直很偏爱JavaScript，不为什么，就是因为强大。但是，TypeScript的出现，与之形成对比，让我不得不开始考虑TypeScript，下面我就为大家解析一下我为什么要开始用TypeScript。<br><img src="/2020/02/08/js/t1.jpg" alt="js1"><br><img src="/2020/02/08/js/t2.jpg" alt="js1"><br>JavaScript可能是一种事实上的现代Web开发语言，它也是我一直是我选择用来编写脚本的语言。用Python编写代码很有趣，但是如果我有一些东西要自动化，我会使用Node。</p>
+<p>在过去，我选择的服务器端语言是C#，但现在我感觉它很笨拙，尽管它很强大。我曾经天真地认为Node是服务器端语言的“神来之笔”，它满足了我编写代码的一切需求。我甚至可以有很多种不同的方式使用JavaScript来编写安卓（Android）和iOS应用程序。</p>
+<p>我并不是说JavaScript对于编写任何程序来说，是一个完美的工具，但是多年来它确实对我非常有用。</p>
+<p>我一直坚定地承认JavaScript在Web前台的繁重的开发工作上的一些缺陷，这包括了Gary Bernhardt在他的戏谑性的 “Wat?” 闪电演讲中令人一想起来就会发笑的例子。如果你从来没有看过这个视频，现在就停下你的阅读，赶紧去找这个视频看看。看完后你会感谢我的。</p>
+<p>Gary Bernhardt的这个闪电演讲现在已经成为我的推荐阅读列表的一部分，和Jonathan Creamer所写的“面向23世纪的JavaScript体系结构”这篇文章一起呈现给未来的前端开发人员。</p>
+<p>虽然自从ES6出现以后，这篇文章中的一些内容看起来是多余的，但是它对于解释JavaScript需要从“普通编程语言”转变思维的事情（如果有这样的事情的话）有很大的帮助。这篇文章本身是我5年前开始自己的JavaScript之旅的一个重要原因。</p>
+<p>但是为什么我现在威胁说要再也不用回JavaScript呢？答案很简单，因为TypeScript。</p>
+<h3 id="1、TypeScript是什么？"><a href="#1、TypeScript是什么？" class="headerlink" title="1、TypeScript是什么？"></a>1、TypeScript是什么？</h3><p>我猜你们已经听说过TypeScript，如果没有的话，让我试着总结一下：TypeScript是强类型的JavaScript语言。</p>
+<p>它添加了你们对强类型语言所期望的一些特性，并且需要一个编译步骤（技术上这个步骤叫“Transpilation”）来将TypeScript转换为JavaScript的代码。这是因为浏览器不理解TypeScript。</p>
+<p>从技术上讲，TypeScript不添加任何新的运行时特性，它只是为开发人员添加一些特性。</p>
+<p>我听说有人把TypeScript说成是一种“不是爱它就是恨它”的开发语言，但是我还没有见过一个用过TypeScript的人说恨它。但是我和很多不想尝试它的人交流过。那是大约2016年中的事，其实我也是其中之一。</p>
+<p>我听到的同行们对TypeScript的最坏批评是，它是一套需要额外学习的工具。不仅包括语言本身，还包括了构建过程。然而，大多数现代Web应用程序在其构建链中至少有一个链接以Babel的形式保留给JavaScript，而Babel是一个允许较新JavaScript在较旧的浏览器上运行的工具。</p>
+<p>将TypeScript添加到这个链中不应该是件高难度的事，特别是因为Babel从v7版本开始就支持TypeScript编译。</p>
+<p>尽管TypeScript不应该是一种高深的科学，但有时它会让人产生这种感觉。这就是为什么刚开始使用TypeScript的人有时会挣扎着回到JavaScript上的原因之一，因为JavaScript就在浏览器中运行。</p>
+<h3 id="2、TypeScript带来的好处"><a href="#2、TypeScript带来的好处" class="headerlink" title="2、TypeScript带来的好处"></a>2、TypeScript带来的好处</h3><p>正如我上面所说，我从未听过有人使用TypeScript，这是件很遗憾的事。TypeScript带来的好处远远大于它的困难，特别是在Angular CLI（Angular命令行接口）或Create- React-App（注：是一个官方支持的创建React单页应用程序的方法）大行其道的那个时代，这两个工具都允许你在几分钟内开始一个新的支持TypeScript的项目。</p>
+<p>我想你已经知道这些好处是什么，但如果你不知道的话，请允许我总结一下：</p>
+<p>TypeScript的编译步骤可以让你及早发现问题，而不是等待运行时失败。</p>
+<p>你的IDE现在甚至可以在编译步骤之前提示你一些错误。想象一下，如果你的IDE能够告诉你正在引用一个不存在的变量，或者正在使用错误的参数来调用一个函数，那真是革命性的进步！（当然，这里我是开玩笑的，因为“真正的”编程语言很多年前就有了这些功能）</p>
+<p>当ECMAScript（驱动JavaScript语言的标准）中提出新的特性时，TypeScript能够很早地采用它们，让你一直保持在技术最前沿。</p>
+<p>但实际上，TypeScript的主要好处是，它可以让你的代码以JavaScript无法描述的方式进行自我描述。</p>
+<p>你可能认为，当你是一个项目的唯一开发人员时，JavaScript并没有那么糟糕，因为所有的东西都在你的脑子里，而且你有完美的记忆力，是这样吗？不，你错了。即使作为一个项目的唯一开发人员，我在编写代码时也容易出现一阵阵健忘症。</p>
+<p>现在，当我编写普通的JavaScript时，我讨厌阅读一个函数的定义来搞清楚如何使用它。我不知道它会返回什么（如果有返回值的话）或者它接受什么样的参数。我可能知道参数名称和个数，但这并不总是足够的（如下面代码所示）：</p>
+<pre><code>1 Function doTheThing() {
+2  let error = false;
+3
+4  // About a million lines of code that might cause an error
+5
+6   return error;
+7 }
+8
+9 function consumeTheThing() {
+10  let error = doTheThing();
+11  if (error) {
+12  // What do I do with the error now?
+13  }
+14 }</code></pre><p>这就是我想要表达的。这里的“error”是一个布尔型的值吗？当我看到第2行时，它看起来确实是这样的，但是从那里到结束的“doTheThing”行之间的一百万行代码中间的“error”呢？它可能是一个字符串，或者一个对象，或者天知道是什么。</p>
+<p>你可能会认为这种灵活性是一种资产。它可以是，但更多的时候，它是一个陷阱，引诱你进入一种容易出错的方式，在你和你的同事之间制造很多小挫折。有没有在进入别人的代码中，感到自己像在迷宫里的感觉？</p>
+<p>这就是你的代码在别人看来的样子。你可以用JavaScript编写“好”的代码，但是很少有关于该语言的内容鼓励你这样做。</p>
+<p>而这正是TypeScript的美妙所在。它不会强迫你成为一个好的开发人员。但它给了让你成为好的开发人员的工具。</p>
+<h3 id="3、TypeScript缺点"><a href="#3、TypeScript缺点" class="headerlink" title="3、TypeScript缺点"></a>3、TypeScript缺点</h3><p>TypeScript有缺点吗？当然有。</p>
+<p>更多的打字（指定类型），无论是从两个方面的那一个来看都是这样。你的键盘会磨损得更快（这可能是你们中使用蝴蝶键盘的人所担心的），这没什么大不了的。</p>
+<p>但是一些JavaScript开发人员讨厌在每个新函数或变量中键入类型。你不必非这么做不可，但是如果你不使用类型，为什么要使用TypeScript呢？</p>
+<p>因为代码必须编译，因此每次更新和测试运行需要稍长一点时间。其实需要的只是多几秒钟而已，而使用TypeScript节省的时间远远超过编译它所花费的时间。</p>
+<p>构建一个项目的复杂性有时是非常痛苦的。这是真的。如果你不熟悉你的构建工具，构建一个新项目可能是一个令人沮丧的体验。</p>
+<p>短期内我的建议是找一个启动项目让你开始。至于长期的建议，我建议你花时间学习工具-tsc，Babel，WebPack和所有的有用的工具。</p>
+<p>我觉得我的论点有点倾向性。我并没有把重点放在TypeScript的缺点上，而是放在更多地强调优点上。我猜这也是我不会花太多时间论证每顿饭都吃麦当劳的好处的原因，因为这样做的好处是有限的（不用再做饭了……我想只是这样）。</p>
+<h3 id="4、关于TypeScript的统计"><a href="#4、关于TypeScript的统计" class="headerlink" title="4、关于TypeScript的统计"></a>4、关于TypeScript的统计</h3><p>像往常一样，StackOverflow提供的数据会判断我的看法是对还是错。表面上的数据来看，我好像错得太离谱了。</p>
+<p>根据StackOverflow 2019开发者调查报告，JavaScript已经连续第七年成为StackOverflow上谈论最多的语言，67.8%的受访者都在使用它，而TypeScript在这个排名中名列第十，它正在被21.2%的受访者使用。</p>
+<p>但是在2018年，TypeScript的这个统计数字只为17.4%，而再前一年仅为9.5%。2016年的时候，甚至只有0.47%的受访者使用TypeScript。</p>
+<p>在这个角度来看，TypeScript这些年来有了惊人的增长，这主要归功于Angular框架，它在早些时候放弃了对JavaScript的支持。</p>
+<p>当你看到“最受欢迎”的语言排名时，TypeScript的表现更加抢眼了，它以73.1%的比分排名了第三位（位列Rust和Python之后）。而JavaScript以66.8%排在第11位。</p>
+<h3 id="前景"><a href="#前景" class="headerlink" title="前景"></a>前景</h3><p>我不认为TypeScript会很快取代JavaScript，理解后者对于前者的工作至关重要。而且我们也不会看到TypeScript在任何浏览器中以本机方式运行。</p>
+<p>TypeScript是一个预处理器，就像之前的CoffeeScript一样。TypeScript和CoffeeScript的区别在于后者是对构建它的语言的根本性改变，而TypeScript是一种自然演变。这不仅仅使得学习它更容易，而且使得从JavaScript项目转换为TypeScript的过程更为渐进。首先简单地将所有以.js结尾的文件重命名为以.ts为结尾的文件，你就有了一个TypeScript项目！</p>
+<p>然后，你就可以一步一步地开始采用TypeScript的语言特性。我不能保证这个过程会很容易，但是它会告诉你一些JavaScript永远无法做到的事情。当你开始下一个项目时，TypeScript编译器将会在那里等待你。</p>
+<p>所以,使用了TypeScript,我知道我再也不会用回JavaScript了。</p>
+<p>[原文]（<a href="https://medium.com/JavaScript-in-plain-english/ill-never-go-back-to-JavaScript-16370dc264a0）" target="_blank" rel="noopener">https://medium.com/JavaScript-in-plain-english/ill-never-go-back-to-JavaScript-16370dc264a0）</a></p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">Show TOC</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">Hide TOC</button>
+  <div class="random-toc">
+    <h2>Table of Content</h2>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1、TypeScript是什么？"><span class="toc-text">1、TypeScript是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2、TypeScript带来的好处"><span class="toc-text">2、TypeScript带来的好处</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3、TypeScript缺点"><span class="toc-text">3、TypeScript缺点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4、关于TypeScript的统计"><span class="toc-text">4、关于TypeScript的统计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#前景"><span class="toc-text">前景</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+
+  
+
+  
+    <a href="/2020/02/06/gameAll/" class="next">Next post 小游戏集合 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by John Dxx using
+      <a href="http://hexo.io" target="_blank" rel="noopener">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random" target="_blank" rel="noopener">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg">
+    <p id="description">这是一个由hexo搭建的博客</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont github">&#xe606;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="https://weibo.com/p/1005056013423358/home?from=page_100505&mod=TAB&is_all=1#place" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont weibo">&#xe602;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="mailto:wulidan0530@live.com">
+        
+          M
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":12};
+var unsplashConfig = {"gravity":"center"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "34495E";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+
