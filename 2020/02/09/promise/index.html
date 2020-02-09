@@ -1,0 +1,418 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="John Dxx">
+  
+  
+  
+  
+    <meta name="description" content="Promise 必须为以下三种状态之一：等待态（Pending）、执行态（Fulfilled）和拒绝态（Rejected）。一旦Promise 被 resolve 或 reject，不能再迁移至其他任何状态（即状态 immutable）。
+基本过程：
+1.初始化 Promise 状态（pending）2.执行 then(..) 注册回调处理数组（then 方法可被同一个 promise 调用...">
+  
+  <title>这一次，彻底弄懂 Promise 原理 [ 南在南方_3 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/hollow.ico">
+  
+  
+  
+<link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+<div class="side-navigate hide-area">
+  
+  
+    <div class="item next">
+      <a href="/2020/02/09/runJs/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        JavaScript 运行原理
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onClick="openUserCard()">
+          <img id="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg"/>
+          <div id="homelink">南在南方_3</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/tags">Tags</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/about">About</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  
+
+  <article id="post">
+    <h1>这一次，彻底弄懂 Promise 原理</h1>
+    <p class="page-title-sub">
+      <span id = "post-title-date">Created at 2020-02-09</span>
+      
+        <span id = "post-title-updated">Updated at 2020-02-09</span>
+      
+      
+      
+    </p>
+    
+    <p>Promise 必须为以下三种状态之一：等待态（Pending）、执行态（Fulfilled）和拒绝态（Rejected）。一旦Promise 被 resolve 或 reject，不能再迁移至其他任何状态（即状态 immutable）。</p>
+<p>基本过程：</p>
+<p>1.初始化 Promise 状态（pending）<br>2.执行 then(..) 注册回调处理数组（then 方法可被同一个 promise 调用多次）<br>3.立即执行 Promise 中传入的 fn 函数，将Promise 内部 resolve、reject 函数作为参数传递给 fn ，按事件机制时机处理<br>4.Promise中要保证，then方法传入的参数 onFulfilled 和 onRejected，必须在then方法被调用的那一轮事件循环之后的新执行栈中执行。</p>
+<p>** 真正的链式Promise是指在当前promise达到fulfilled状态后，即开始进行下一个promise. **</p>
+<h3 id="链式调用"><a href="#链式调用" class="headerlink" title="链式调用"></a>链式调用</h3><p>先从 Promise 执行结果看一下，有如下一段代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">    setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">        resolve(&#123; test: 1 &#125;)</span><br><span class="line">        resolve(&#123; test: 2 &#125;)</span><br><span class="line">        reject(&#123; test: 2 &#125;)</span><br><span class="line">    &#125;, 1000)</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;result1&#39;, data)</span><br><span class="line">&#125;,(data1)&#x3D;&gt;&#123;</span><br><span class="line">    console.log(&#39;result2&#39;,data1)</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;result3&#39;, data)</span><br><span class="line">&#125;)</span><br><span class="line">&#x2F;&#x2F;result1 &#123; test: 1 &#125;</span><br><span class="line">&#x2F;&#x2F;result3 undefined</span><br></pre></td></tr></table></figure>
+
+<p>显然这里输出了不同的 data。由此可以看出几点：</p>
+<p>1.可进行链式调用，且每次 then 返回了新的 Promise(2次打印结果不一致，如果是同一个实例，打印结果应该一致。<br>2.只输出第一次 resolve 的内容，reject 的内容没有输出，即 Promise 是有状态且状态只可以由pending -&gt; fulfilled或 pending-&gt; rejected,是不可逆的。<br>3.then 中返回了新的 Promise,但是then中注册的回调仍然是属于上一个 Promise 的。</p>
+<p>基于以上几点，我们先写个基于 PromiseA+ 规范的只含 resolve 方法的 Promise 模型:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">function Promise(fn)&#123; </span><br><span class="line">        let state &#x3D; &#39;pending&#39;;</span><br><span class="line">        let value &#x3D; null;</span><br><span class="line">        const callbacks &#x3D; [];</span><br><span class="line"></span><br><span class="line">        this.then &#x3D; function (onFulfilled)&#123;</span><br><span class="line">            return new Promise((resolve, reject)&#x3D;&gt;&#123;</span><br><span class="line">                handle(&#123; &#x2F;&#x2F;桥梁，将新 Promise 的 resolve 方法，放到前一个 promise 的回调对象中</span><br><span class="line">                    onFulfilled, </span><br><span class="line">                    resolve</span><br><span class="line">                &#125;)</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        function handle(callback)&#123;</span><br><span class="line">            if(state &#x3D;&#x3D;&#x3D; &#39;pending&#39;)&#123;</span><br><span class="line">                callbacks.push(callback)</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            if(state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39;)&#123;</span><br><span class="line">                if(!callback.onFulfilled)&#123;</span><br><span class="line">                    callback.resolve(value)</span><br><span class="line">                    return;</span><br><span class="line">                &#125;</span><br><span class="line">                const ret &#x3D; callback.onFulfilled(value) &#x2F;&#x2F;处理回调</span><br><span class="line">                callback.resolve(ret) &#x2F;&#x2F;处理下一个 promise 的resolve</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        function resolve(newValue)&#123;</span><br><span class="line">            const fn &#x3D; ()&#x3D;&gt;&#123;</span><br><span class="line">                if(state !&#x3D;&#x3D; &#39;pending&#39;)return</span><br><span class="line"></span><br><span class="line">                state &#x3D; &#39;fulfilled&#39;;</span><br><span class="line">                value &#x3D; newValue</span><br><span class="line">                handelCb()</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            setTimeout(fn,0) &#x2F;&#x2F;基于 PromiseA+ 规范</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        function handelCb()&#123;</span><br><span class="line">            while(callbacks.length) &#123;</span><br><span class="line">                const fulfiledFn &#x3D; callbacks.shift();</span><br><span class="line">                handle(fulfiledFn);</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        fn(resolve)</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>** 这个模型简单易懂，这里最关键的点就是在 then 中新创建的 Promise，它的状态变为 fulfilled 的节点是在上一个 Promise的回调执行完毕的时候。也就是说当一个 Promise 的状态被 fulfilled 之后，会执行其回调函数，而回调函数返回的结果会被当作 value，返回给下一个 Promise(也就是then 中产生的 Promise)，同时下一个 Promise的状态也会被改变(执行 resolve 或 reject)，然后再去执行其回调,以此类推下去…链式调用的效应就出来了。 **</p>
+<p>但是如果仅仅是例子中的情况，我们可以这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">    setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">        resolve(&#123; test: 1 &#125;)</span><br><span class="line">    &#125;, 1000)</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;result1&#39;, data)</span><br><span class="line">    &#x2F;&#x2F;dosomething</span><br><span class="line">    console.log(&#39;result3&#39;)</span><br><span class="line">&#125;)</span><br><span class="line">&#x2F;&#x2F;result1 &#123; test: 1 &#125;</span><br><span class="line">&#x2F;&#x2F;result3</span><br></pre></td></tr></table></figure>
+<p>实际上，我们常用的链式调用，是用在异步回调中，以解决”回调地狱”的问题。如下例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">  setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">    resolve(&#123; test: 1 &#125;)</span><br><span class="line">  &#125;, 1000)</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">  console.log(&#39;result1&#39;, data)</span><br><span class="line">  &#x2F;&#x2F;dosomething</span><br><span class="line">  return test()</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">  console.log(&#39;result2&#39;, data)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">function test(id) &#123;</span><br><span class="line">  return new Promise(((resolve) &#x3D;&gt; &#123;</span><br><span class="line">    setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">      resolve(&#123; test: 2 &#125;)</span><br><span class="line">    &#125;, 5000)</span><br><span class="line">  &#125;))</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;基于第一个 Promise 模型，执行后的输出</span><br><span class="line">&#x2F;&#x2F;result1 &#123; test: 1 &#125;</span><br><span class="line">&#x2F;&#x2F;result2 Promise &#123;then: ƒ&#125;</span><br></pre></td></tr></table></figure>
+<p>用上面的 Promise 模型，得到的结果显然不是我们想要的。认真看上面的模型，执行 callback.resolve 时，传入的参数是 callback.onFulfilled 执行完成的返回，显然这个测试例子返回的就是一个 Promise，而我们的 Promise 模型中的 resolve 方法并没有特殊处理。那么我们将 resolve 改一下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">     ...</span><br><span class="line">     function resolve(newValue)&#123;</span><br><span class="line">         const fn &#x3D; ()&#x3D;&gt;&#123;</span><br><span class="line">             if(state !&#x3D;&#x3D; &#39;pending&#39;)return</span><br><span class="line"></span><br><span class="line">             if(newValue &amp;&amp; (typeof newValue &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof newValue &#x3D;&#x3D;&#x3D; &#39;function&#39;))&#123;</span><br><span class="line">                 const &#123;then&#125; &#x3D; newValue</span><br><span class="line">                 if(typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;)&#123;</span><br><span class="line">                     &#x2F;&#x2F; newValue 为新产生的 Promise,此时resolve为上个 promise 的resolve</span><br><span class="line">                     &#x2F;&#x2F;相当于调用了新产生 Promise 的then方法，注入了上个 promise 的resolve 为其回调</span><br><span class="line">                     then.call(newValue,resolve)</span><br><span class="line">                     return</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;</span><br><span class="line">             state &#x3D; &#39;fulfilled&#39;;</span><br><span class="line">             value &#x3D; newValue</span><br><span class="line">             handelCb()</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         setTimeout(fn,0)</span><br><span class="line">     &#125;</span><br><span class="line">     ...</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>用这个模型，再测试我们的例子，就得到了正确的结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">    setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">        resolve(&#123; test: 1 &#125;)</span><br><span class="line">    &#125;, 1000)</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;result1&#39;, data)</span><br><span class="line">    &#x2F;&#x2F;dosomething</span><br><span class="line">    return test()</span><br><span class="line">&#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">    console.log(&#39;result2&#39;, data)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">function test(id) &#123;</span><br><span class="line">    return new Promise(((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">        setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">        resolve(&#123; test: 2 &#125;)</span><br><span class="line">        &#125;, 5000)</span><br><span class="line">    &#125;))</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;result1 &#123; test: 1 &#125;</span><br><span class="line">&#x2F;&#x2F;result2 &#123; test: 2 &#125;</span><br></pre></td></tr></table></figure>
+
+<p>显然，新增的逻辑就是针对 resolve 入参为 Promise 的时候的处理。我们观察一下 test 里面创建的 Promise，它是没有调用 then方法的。从上面的分析我们已经知道 Promise 的回调函数就是通过调用其 then 方法注册的，因此 test 里面创建的 Promise 其回调函数为空。</p>
+<p>显然如果没有回调函数，执行 resolve 的时候，是没办法链式下去的。因此，我们需要主动为其注入回调函数。</p>
+<p>我们只要把第一个 then 中产生的 Promise 的 resolve 函数的执行，延迟到 test 里面的 Promise 的状态为 onFulfilled 的时候再执行，那么链式就可以继续了。所以，当 resolve 入参为 Promise 的时候，调用其 then 方法为其注入回调函数，而注入的是前一个 Promise 的 resolve 方法，所以要用 call 来绑定 this 的指向。</p>
+<p>基于新的 Promise 模型，上面的执行过程产生的 Promise 实例及其回调函数，可以用看下表：</p>
+<table>
+<thead>
+<tr>
+<th>Promise</th>
+<th align="center">callback</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1</td>
+<td align="center">[{onFulfilled:c1(第一个then中的fn),resolve:p2resolve}]</td>
+</tr>
+<tr>
+<td>P2 (P1 调用 then 时产生)</td>
+<td align="center">[{onFulfilled:c2(第二个then中的fn),resolve:p3resolve}]</td>
+</tr>
+<tr>
+<td>P3 (P2 调用 then 时产生)</td>
+<td align="center">[]</td>
+</tr>
+<tr>
+<td>P4 (执行c1中产生[调用 test ])</td>
+<td align="center">[{onFulfilled:p2resolve,resolve:p5resolve}]</td>
+</tr>
+<tr>
+<td>P5 (调用p2resolve 时，进入 then.call 逻辑中产生)</td>
+<td align="center">[]</td>
+</tr>
+</tbody></table>
+<p>有了这个表格，我们就可以清晰知道各个实例中 callback 执行的顺序是：</p>
+<p>c1 -&gt; p2resolve -&gt; c2 -&gt; p3resolve -&gt; [] -&gt; p5resolve -&gt; []</p>
+<p>以上就是链式调用的原理了。</p>
+<h3 id="reject"><a href="#reject" class="headerlink" title="reject"></a>reject</h3><p>下面我们再来补全 reject 的逻辑。只需要在注册回调、状态改变时加上 reject 的逻辑即可。</p>
+<p>完整代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">      let state &#x3D; &#39;pending&#39;;</span><br><span class="line">      let value &#x3D; null;</span><br><span class="line">      const callbacks &#x3D; [];</span><br><span class="line"></span><br><span class="line">      this.then &#x3D; function (onFulfilled,onRejected)&#123;</span><br><span class="line">          return new Promise((resolve, reject)&#x3D;&gt;&#123;</span><br><span class="line">              handle(&#123;</span><br><span class="line">                  onFulfilled, </span><br><span class="line">                  onRejected,</span><br><span class="line">                  resolve, </span><br><span class="line">                  reject</span><br><span class="line">              &#125;)</span><br><span class="line">          &#125;)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      function handle(callback)&#123;</span><br><span class="line">          if(state &#x3D;&#x3D;&#x3D; &#39;pending&#39;)&#123;</span><br><span class="line">              callbacks.push(callback)</span><br><span class="line">              return;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          const cb &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39; ? callback.onFulfilled:callback.onRejected;</span><br><span class="line">          const next &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39;? callback.resolve:callback.reject;</span><br><span class="line"></span><br><span class="line">          if(!cb)&#123;</span><br><span class="line">              next(value)</span><br><span class="line">              return;</span><br><span class="line">          &#125;</span><br><span class="line">          const ret &#x3D; cb(value)</span><br><span class="line">          next(ret)</span><br><span class="line">      &#125;</span><br><span class="line">      function resolve(newValue)&#123;</span><br><span class="line">          const fn &#x3D; ()&#x3D;&gt;&#123;</span><br><span class="line">              if(state !&#x3D;&#x3D; &#39;pending&#39;)return</span><br><span class="line"></span><br><span class="line">              if(newValue &amp;&amp; (typeof newValue &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof newValue &#x3D;&#x3D;&#x3D; &#39;function&#39;))&#123;</span><br><span class="line">                  const &#123;then&#125; &#x3D; newValue</span><br><span class="line">                  if(typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;)&#123;</span><br><span class="line">                      &#x2F;&#x2F; newValue 为新产生的 Promise,此时resolve为上个 promise 的resolve</span><br><span class="line">                      &#x2F;&#x2F;相当于调用了新产生 Promise 的then方法，注入了上个 promise 的resolve 为其回调</span><br><span class="line">                      then.call(newValue,resolve, reject)</span><br><span class="line">                      return</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">              state &#x3D; &#39;fulfilled&#39;;</span><br><span class="line">              value &#x3D; newValue</span><br><span class="line">              handelCb()</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          setTimeout(fn,0)</span><br><span class="line">      &#125;</span><br><span class="line">      function reject(error)&#123;</span><br><span class="line"></span><br><span class="line">          const fn &#x3D; ()&#x3D;&gt;&#123;</span><br><span class="line">              if(state !&#x3D;&#x3D; &#39;pending&#39;)return</span><br><span class="line"></span><br><span class="line">              if(error &amp;&amp; (typeof error &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof error &#x3D;&#x3D;&#x3D; &#39;function&#39;))&#123;</span><br><span class="line">                  const &#123;then&#125; &#x3D; error</span><br><span class="line">                  if(typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;)&#123;</span><br><span class="line">                      then.call(error,resolve, reject)</span><br><span class="line">                      return</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">              state &#x3D; &#39;rejected&#39;;</span><br><span class="line">              value &#x3D; error</span><br><span class="line">              handelCb()</span><br><span class="line">          &#125;</span><br><span class="line">          setTimeout(fn,0)</span><br><span class="line">      &#125;</span><br><span class="line">      function handelCb()&#123;</span><br><span class="line">          while(callbacks.length) &#123;</span><br><span class="line">              const fn &#x3D; callbacks.shift();</span><br><span class="line">              handle(fn);</span><br><span class="line">          &#125;;</span><br><span class="line">      &#125;</span><br><span class="line">      fn(resolve, reject)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><p>异常通常是指在执行成功/失败回调时代码出错产生的错误，对于这类异常，我们使用 try-catch 来捕获错误，并将 Promise 设为 rejected 状态即可。</p>
+<p>handle代码改造如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">function handle(callback)&#123;</span><br><span class="line">    if(state &#x3D;&#x3D;&#x3D; &#39;pending&#39;)&#123;</span><br><span class="line">        callbacks.push(callback)</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    const cb &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39; ? callback.onFulfilled:callback.onRejected;</span><br><span class="line">    const next &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39;? callback.resolve:callback.reject;</span><br><span class="line"></span><br><span class="line">    if(!cb)&#123;</span><br><span class="line">        next(value)</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    try &#123;</span><br><span class="line">        const ret &#x3D; cb(value)</span><br><span class="line">        next(ret)</span><br><span class="line">    &#125; catch (e) &#123;</span><br><span class="line">        callback.reject(e);</span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们实际使用时，常习惯注册 catch 方法来处理错误，例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">       setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">           resolve(&#123; test: 1 &#125;)</span><br><span class="line">       &#125;, 1000)</span><br><span class="line">   &#125;).then((data) &#x3D;&gt; &#123;</span><br><span class="line">       console.log(&#39;result1&#39;, data)</span><br><span class="line">       &#x2F;&#x2F;dosomething</span><br><span class="line">       return test()</span><br><span class="line">   &#125;).catch((ex) &#x3D;&gt; &#123;</span><br><span class="line">       console.log(&#39;error&#39;, ex)</span><br><span class="line">   &#125;)</span><br></pre></td></tr></table></figure>
+<pre><code>实际上，错误也好，异常也罢，最终都是通过reject实现的。也就是说可以通过 then 中的错误回调来处理。所以我们可以增加这样的一个 catch 方法：</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">    ...</span><br><span class="line">    this.then &#x3D; function (onFulfilled,onRejected)&#123;</span><br><span class="line">        return new Promise((resolve, reject)&#x3D;&gt;&#123;</span><br><span class="line">            handle(&#123;</span><br><span class="line">                onFulfilled, </span><br><span class="line">                onRejected,</span><br><span class="line">                resolve, </span><br><span class="line">                reject</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">    this.catch &#x3D; function (onError)&#123;</span><br><span class="line">        this.then(null,onError)</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Finally方法"><a href="#Finally方法" class="headerlink" title="Finally方法"></a>Finally方法</h3><p>在实际应用的时候，我们很容易会碰到这样的场景，不管Promise最后的状态如何，都要执行一些最后的操作。我们把这些操作放到 finally 中，也就是说 finally 注册的函数是与 Promise 的状态无关的，不依赖 Promise 的执行结果。所以我们可以这样写 finally 的逻辑：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">    ...</span><br><span class="line">    this.catch &#x3D; function (onError)&#123;</span><br><span class="line">        this.then(null,onError)</span><br><span class="line">    &#125;</span><br><span class="line">    this.finally &#x3D; function (onDone)&#123;</span><br><span class="line">        this.then(onDone,onError)</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="resolve-方法和-reject-方法"><a href="#resolve-方法和-reject-方法" class="headerlink" title="resolve 方法和 reject 方法"></a>resolve 方法和 reject 方法</h3><p>实际应用中，我们可以使用 Promise.resolve 和 Promise.reject 方法，用于将于将非 Promise 实例包装为 Promise 实例。如下例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Promise.resolve(&#123;name:&#39;winty&#39;&#125;)</span><br><span class="line">Promise.reject(&#123;name:&#39;winty&#39;&#125;)</span><br><span class="line">&#x2F;&#x2F; 等价于</span><br><span class="line">new Promise(resolve &#x3D;&gt; resolve(&#123;name:&#39;winty&#39;&#125;))</span><br><span class="line">new Promise((resolve,reject) &#x3D;&gt; reject(&#123;name:&#39;winty&#39;&#125;))</span><br></pre></td></tr></table></figure>
+
+<p>这些情况下，Promise.resolve 的入参可能有以下几种情况：</p>
+<ul>
+<li>无参数 [直接返回一个resolved状态的 Promise 对象]</li>
+<li>普通数据对象 [直接返回一个resolved状态的 Promise 对象]</li>
+<li>一个Promise实例 [直接返回当前实例]</li>
+<li>一个thenable对象(thenable对象指的是具有then方法的对象) [转为 Promise 对象，并立即执行thenable对象的then方法。]</li>
+</ul>
+<p>基于以上几点，我们可以实现一个 Promise.resolve 方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">    ...</span><br><span class="line">    this.resolve &#x3D; function (value)&#123;</span><br><span class="line">        if (value &amp;&amp; value instanceof Promise) &#123;</span><br><span class="line">            return value;</span><br><span class="line">        &#125; else if (value &amp;&amp; typeof value &#x3D;&#x3D;&#x3D; &#39;object&#39; &amp;&amp; typeof value.then &#x3D;&#x3D;&#x3D; &#39;function&#39;)&#123;</span><br><span class="line">            let then &#x3D; value.then;</span><br><span class="line">            return new Promise(resolve &#x3D;&gt; &#123;</span><br><span class="line">                then(resolve);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; else if (value) &#123;</span><br><span class="line">            return new Promise(resolve &#x3D;&gt; resolve(value));</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            return new Promise(resolve &#x3D;&gt; resolve());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Promise.reject与Promise.resolve类似，区别在于Promise.reject始终返回一个状态的rejected的Promise实例，而Promise.resolve的参数如果是一个Promise实例的话，返回的是参数对应的Promise实例，所以状态不一 定。<br>因此，reject 的实现就简单多了，如下：</p>
+<h3 id="Promise-all"><a href="#Promise-all" class="headerlink" title="Promise.all"></a>Promise.all</h3><p>入参是一个 Promise 的实例数组，然后注册一个 then 方法，然后是数组中的 Promise 实例的状态都转为 fulfilled 之后则执行 then 方法。这里主要就是一个计数逻辑，每当一个 Promise 的状态变为 fulfilled 之后就保存该实例返回的数据，然后将计数减一，当计数器变为 0 时，代表数组中所有 Promise 实例都执行完毕。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">        ...</span><br><span class="line">        this.all &#x3D; function (arr)&#123;</span><br><span class="line">            var args &#x3D; Array.prototype.slice.call(arr);</span><br><span class="line">            return new Promise(function(resolve, reject) &#123;</span><br><span class="line">                if(args.length &#x3D;&#x3D;&#x3D; 0) return resolve([]);</span><br><span class="line">                var remaining &#x3D; args.length;</span><br><span class="line"></span><br><span class="line">                function res(i, val) &#123;</span><br><span class="line">                    try &#123;</span><br><span class="line">                        if(val &amp;&amp; (typeof val &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof val &#x3D;&#x3D;&#x3D; &#39;function&#39;)) &#123;</span><br><span class="line">                            var then &#x3D; val.then;</span><br><span class="line">                            if(typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">                                then.call(val, function(val) &#123;</span><br><span class="line">                                    res(i, val);</span><br><span class="line">                                &#125;, reject);</span><br><span class="line">                                return;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                        args[i] &#x3D; val;</span><br><span class="line">                        if(--remaining &#x3D;&#x3D;&#x3D; 0) &#123;</span><br><span class="line">                            resolve(args);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; catch(ex) &#123;</span><br><span class="line">                        reject(ex);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                for(var i &#x3D; 0; i &lt; args.length; i++) &#123;</span><br><span class="line">                    res(i, args[i]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Promise-race"><a href="#Promise-race" class="headerlink" title="Promise.race"></a>Promise.race</h3><p>有了 Promise.all 的理解，Promise.race 理解起来就更容易了。它的入参也是一个 Promise 实例数组，然后其 then 注册的回调方法是数组中的某一个 Promise 的状态变为 fulfilled 的时候就执行。因为 Promise 的状态只能改变一次，那么我们只需要把 Promise.race 中产生的 Promise 对象的 resolve 方法，注入到数组中的每一个 Promise 实例中的回调函数中即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn)&#123; </span><br><span class="line">    ...</span><br><span class="line">    this.race &#x3D; function(values) &#123;</span><br><span class="line">        return new Promise(function(resolve, reject) &#123;</span><br><span class="line">            for(var i &#x3D; 0, len &#x3D; values.length; i &lt; len; i++) &#123;</span><br><span class="line">                values[i].then(resolve, reject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Promise 源码不过几百行，我们可以从执行结果出发，分析每一步的执行过程，然后思考其作用即可。其中最关键的点就是要理解 then 函数是负责注册回调的，真正的执行是在 Promise 的状态被改变之后。而当 resolve 的入参是一个 Promise 时，要想链式调用起来，就必须调用其 then 方法(then.call),将上一个 Promise 的 resolve 方法注入其回调数组中。</p>
+<h3 id="完整-Promise-模型"><a href="#完整-Promise-模型" class="headerlink" title="完整 Promise 模型"></a>完整 Promise 模型</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br></pre></td><td class="code"><pre><span class="line">function Promise(fn) &#123;</span><br><span class="line">  let state &#x3D; &#39;pending&#39;</span><br><span class="line">  let value &#x3D; null</span><br><span class="line">  const callbacks &#x3D; []</span><br><span class="line"></span><br><span class="line">  this.then &#x3D; function (onFulfilled, onRejected) &#123;</span><br><span class="line">    return new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">      handle(&#123;</span><br><span class="line">        onFulfilled,</span><br><span class="line">        onRejected,</span><br><span class="line">        resolve,</span><br><span class="line">        reject,</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.catch &#x3D; function (onError) &#123;</span><br><span class="line">    this.then(null, onError)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.finally &#x3D; function (onDone) &#123;</span><br><span class="line">    this.then(onDone, onError)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.resolve &#x3D; function (value) &#123;</span><br><span class="line">    if (value &amp;&amp; value instanceof Promise) &#123;</span><br><span class="line">      return value</span><br><span class="line">    &#125; if (value &amp;&amp; typeof value &#x3D;&#x3D;&#x3D; &#39;object&#39; &amp;&amp; typeof value.then &#x3D;&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">      const &#123; then &#125; &#x3D; value</span><br><span class="line">      return new Promise((resolve) &#x3D;&gt; &#123;</span><br><span class="line">        then(resolve)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125; if (value) &#123;</span><br><span class="line">      return new Promise(resolve &#x3D;&gt; resolve(value))</span><br><span class="line">    &#125;</span><br><span class="line">    return new Promise(resolve &#x3D;&gt; resolve())</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.reject &#x3D; function (value) &#123;</span><br><span class="line">    return new Promise(((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">      reject(value)</span><br><span class="line">    &#125;))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.all &#x3D; function (arr) &#123;</span><br><span class="line">    const args &#x3D; Array.prototype.slice.call(arr)</span><br><span class="line">    return new Promise(((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">      if (args.length &#x3D;&#x3D;&#x3D; 0) return resolve([])</span><br><span class="line">      let remaining &#x3D; args.length</span><br><span class="line"></span><br><span class="line">      function res(i, val) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">          if (val &amp;&amp; (typeof val &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof val &#x3D;&#x3D;&#x3D; &#39;function&#39;)) &#123;</span><br><span class="line">            const &#123; then &#125; &#x3D; val</span><br><span class="line">            if (typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">              then.call(val, (val) &#x3D;&gt; &#123;</span><br><span class="line">                res(i, val)</span><br><span class="line">              &#125;, reject)</span><br><span class="line">              return</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          args[i] &#x3D; val</span><br><span class="line">          if (--remaining &#x3D;&#x3D;&#x3D; 0) &#123;</span><br><span class="line">            resolve(args)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; catch (ex) &#123;</span><br><span class="line">          reject(ex)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      for (let i &#x3D; 0; i &lt; args.length; i++) &#123;</span><br><span class="line">        res(i, args[i])</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  this.race &#x3D; function (values) &#123;</span><br><span class="line">    return new Promise(((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">      for (let i &#x3D; 0, len &#x3D; values.length; i &lt; len; i++) &#123;</span><br><span class="line">        values[i].then(resolve, reject)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  function handle(callback) &#123;</span><br><span class="line">    if (state &#x3D;&#x3D;&#x3D; &#39;pending&#39;) &#123;</span><br><span class="line">      callbacks.push(callback)</span><br><span class="line">      return</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    const cb &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39; ? callback.onFulfilled : callback.onRejected</span><br><span class="line">    const next &#x3D; state &#x3D;&#x3D;&#x3D; &#39;fulfilled&#39; ? callback.resolve : callback.reject</span><br><span class="line"></span><br><span class="line">    if (!cb) &#123;</span><br><span class="line">      next(value)</span><br><span class="line">      return</span><br><span class="line">    &#125;</span><br><span class="line">    try &#123;</span><br><span class="line">      const ret &#x3D; cb(value)</span><br><span class="line">      next(ret)</span><br><span class="line">    &#125; catch (e) &#123;</span><br><span class="line">      callback.reject(e)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  function resolve(newValue) &#123;</span><br><span class="line">    const fn &#x3D; () &#x3D;&gt; &#123;</span><br><span class="line">      if (state !&#x3D;&#x3D; &#39;pending&#39;) return</span><br><span class="line"></span><br><span class="line">      if (newValue &amp;&amp; (typeof newValue &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof newValue &#x3D;&#x3D;&#x3D; &#39;function&#39;)) &#123;</span><br><span class="line">        const &#123; then &#125; &#x3D; newValue</span><br><span class="line">        if (typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">          &#x2F;&#x2F; newValue 为新产生的 Promise,此时resolve为上个 promise 的resolve</span><br><span class="line">          &#x2F;&#x2F; 相当于调用了新产生 Promise 的then方法，注入了上个 promise 的resolve 为其回调</span><br><span class="line">          then.call(newValue, resolve, reject)</span><br><span class="line">          return</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      state &#x3D; &#39;fulfilled&#39;</span><br><span class="line">      value &#x3D; newValue</span><br><span class="line">      handelCb()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    setTimeout(fn, 0)</span><br><span class="line">  &#125;</span><br><span class="line">  function reject(error) &#123;</span><br><span class="line">    const fn &#x3D; () &#x3D;&gt; &#123;</span><br><span class="line">      if (state !&#x3D;&#x3D; &#39;pending&#39;) return</span><br><span class="line"></span><br><span class="line">      if (error &amp;&amp; (typeof error &#x3D;&#x3D;&#x3D; &#39;object&#39; || typeof error &#x3D;&#x3D;&#x3D; &#39;function&#39;)) &#123;</span><br><span class="line">        const &#123; then &#125; &#x3D; error</span><br><span class="line">        if (typeof then &#x3D;&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">          then.call(error, resolve, reject)</span><br><span class="line">          return</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      state &#x3D; &#39;rejected&#39;</span><br><span class="line">      value &#x3D; error</span><br><span class="line">      handelCb()</span><br><span class="line">    &#125;</span><br><span class="line">    setTimeout(fn, 0)</span><br><span class="line">  &#125;</span><br><span class="line">  function handelCb() &#123;</span><br><span class="line">    while (callbacks.length) &#123;</span><br><span class="line">      const fn &#x3D; callbacks.shift()</span><br><span class="line">      handle(fn)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  fn(resolve, reject)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>来自公众号：前端Q</p>
+</blockquote>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">Show TOC</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">Hide TOC</button>
+  <div class="random-toc">
+    <h2>Table of Content</h2>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#链式调用"><span class="toc-text">链式调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reject"><span class="toc-text">reject</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#异常处理"><span class="toc-text">异常处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Finally方法"><span class="toc-text">Finally方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resolve-方法和-reject-方法"><span class="toc-text">resolve 方法和 reject 方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise-all"><span class="toc-text">Promise.all</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise-race"><span class="toc-text">Promise.race</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#完整-Promise-模型"><span class="toc-text">完整 Promise 模型</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+
+  
+
+  
+    <a href="/2020/02/09/runJs/" class="next">Next post JavaScript 运行原理 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by John Dxx using
+      <a href="http://hexo.io" target="_blank" rel="noopener">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random" target="_blank" rel="noopener">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg">
+    <p id="description">这是一个由hexo搭建的博客</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont github">&#xe606;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="https://weibo.com/p/1005056013423358/home?from=page_100505&mod=TAB&is_all=1#place" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont weibo">&#xe602;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="mailto:wulidan0530@live.com">
+        
+          M
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":12};
+var unsplashConfig = {"gravity":"center"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "34495E";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+

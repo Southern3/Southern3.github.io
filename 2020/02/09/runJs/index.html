@@ -1,0 +1,401 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="John Dxx">
+  
+  
+  
+  
+    <meta name="description" content="最初，JavaScript 只能在 Web 浏览器中运行，但是随着 Node 的出现，现在 JavaScript 也可以在服务端运行。虽然我们可能知道应该在何时何地去使用它， 但是我们真的了解这些脚本执行的背后发生了什么吗？
+如果您觉得自己对 JavaScript 引擎有了一些了解的话，可以先给自己鼓个掌，但不要急着关掉本文，我相信阅读完成后您仍然可以从中学到一些东西。
+JavaScript...">
+  
+  <title>JavaScript 运行原理 [ 南在南方_3 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/hollow.ico">
+  
+  
+  
+<link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+<div class="side-navigate hide-area">
+  
+    <div class="item prev">
+      <a href="/2020/02/09/promise/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        这一次，彻底弄懂 Promise 原理
+      </div>
+    </div>
+  
+  
+    <div class="item next">
+      <a href="/2020/02/08/js/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        TypeScript 让你不会想用回 JavaScript
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onClick="openUserCard()">
+          <img id="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg"/>
+          <div id="homelink">南在南方_3</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/tags">Tags</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/about">About</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  
+
+  <article id="post">
+    <h1>JavaScript 运行原理</h1>
+    <p class="page-title-sub">
+      <span id = "post-title-date">Created at 2020-02-09</span>
+      
+        <span id = "post-title-updated">Updated at 2020-02-09</span>
+      
+      
+      
+    </p>
+    
+    <p>最初，JavaScript 只能在 Web 浏览器中运行，但是随着 Node 的出现，现在 JavaScript 也可以在服务端运行。虽然我们可能知道应该在何时何地去使用它， 但是我们真的了解这些脚本执行的背后发生了什么吗？</p>
+<p>如果您觉得自己对 JavaScript 引擎有了一些了解的话，可以先给自己鼓个掌，但不要急着关掉本文，我相信阅读完成后您仍然可以从中学到一些东西。</p>
+<p>JavaScript 是一门高级语言，但是最终计算机能理解只有1和0。那么我们编写的代码是如何被计算机理解的呢？掌握所学编程语言的基础知识将让您能编写出更好的代码。在本文中，我们仅探讨一个问题：JavaScript 是如何工作的？</p>
+<h3 id="JavaScript-引擎"><a href="#JavaScript-引擎" class="headerlink" title="JavaScript 引擎"></a>JavaScript 引擎</h3><p>这是本文将要探索的主要内容，它负责使计算机理解我们编写的 JS 代码。JavaScript 引擎是一种用于将我们的代码转换为机器可读语言的引擎。如果没有 JavaScript 引擎，您编写的代码对计算机来说简直是一堆“胡言乱语”。不仅仅是 JavaScript ，其他所有编程语言都需要一个类似的引擎，来将这些“胡言乱语”转换成对计算机有意义的语言。</p>
+<p>目前有多种 JavaScript 引擎在可供使用。您可以在 Wikipedia 上查阅所有可用的 JavaScript 引擎。它们也被称为 ECMAScript 引擎，这样叫的具体原因会在下文中提及。下面是一些我们日常可能会用到的 JavaScript 引擎：</p>
+<ul>
+<li>Chakra, Microsoft IE/Edge</li>
+<li>SpiderMonkey, FireFox</li>
+<li>V8, Chrome</li>
+</ul>
+<p>除此之外的其它引擎，可以自行搜索了解。接下来，我们将深入研究这些引擎，以了解它们是如何翻译 JavaScript 文件的。</p>
+<h3 id="JavaScript-引擎的内里"><a href="#JavaScript-引擎的内里" class="headerlink" title="JavaScript 引擎的内里"></a>JavaScript 引擎的内里</h3><p>我们已经知道了引擎是必须的，由此可能不禁会想：</p>
+<p>是谁发明了 JavaScript 引擎？</p>
+<p>答案是，任何人都可以。它只是分析我们的代码并将其翻译的另一种语言的工具。V8 是最受欢迎的 JavaScript 引擎之一，也是 Chrome 和 NodeJS 使用的引擎。它是用 C++（一种底层语言）编写的。但是如果每个人都创造一个引擎，那场面就不是可控范围内的了。</p>
+<p>因此，为了给这些引擎确立一个规范，ECMA 的标准诞生了，该标准主要提供如何编写引擎和 JavaScript 所有功能的规范。这就是新功能能在 ECMAScript 6、7、8 上实现的原因。同时，引擎也进行了更新以支持这些新功能。于是，我们便可以在开发过程中检查了浏览器中 JS 高级功能的可用性。</p>
+<blockquote>
+<p>下面我们对 V8 引擎进行进一步的探索，因为基本概念在所有引擎中是一致的。</p>
+</blockquote>
+<p><img src="/2020/02/09/runJs/t1.jpg" alt></p>
+<p>上图就是 JS Engine 内部的工作流程。我们输入的代码将通过以下阶段，</p>
+<ul>
+<li>Parser</li>
+<li>AST</li>
+<li>Interpreter 生成 ByteCode</li>
+<li>Profiler</li>
+<li>Compiler 生成优化后的代码</li>
+</ul>
+<p>别被上面的流程给唬住了，在几分钟后您将了解它们是协同运作的。</p>
+<p>在进一步深入这些阶段之前，您需要先了解 Interpreter 和 Compiler 的区别。</p>
+<h3 id="Interpreter-VS-Compiler"><a href="#Interpreter-VS-Compiler" class="headerlink" title="Interpreter VS Compiler"></a>Interpreter VS Compiler</h3><p>通常，将代码转换成机器可读语言的方法有两种。我们将要讨论的概念不仅适用于 JavaScript ，而且适用于大多数编程语言，例如 Python，Java 等。</p>
+<ul>
+<li>Interpreter 逐行读取代码并立即执行。</li>
+<li>Compiler 读取您的整个代码，进行一些优化，然后生成优化后的代码。<br>让我们来看下面这个例子。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function add(a, b) &#123;</span><br><span class="line">    return a+b</span><br><span class="line">&#125;</span><br><span class="line">for(let i &#x3D; 0; i &lt; 1000; i++) &#123;</span><br><span class="line">    add(1 + 1)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的示例循环调用了 add 函数1000次，该函数将两个数字相加并返回总和。</p>
+<p>Interpreter 接收上面的代码后，它将逐行读取并立即执行代码，直到循环结束。它的工作仅仅是实时地将代码转换为我们的计算机可以理解的内容。</p>
+<p>如果这段代码接受者是 Compiler，它会先完整地读取整个程序，对我们要执行的代码进行分析，并生成电脑可以读懂的机器语言。过程如同获取 X（我们的JS文件）并生成 Y（机器语言）一样。如果我们使用 Interpreter 执行 Y，则会获得与执行 X 相同的结果。<br><img src="/2020/02/09/runJs/t2.jpg" alt></p>
+<p>从上图中可以看出，ByteCode 只是中间码，计算机仍需要对其进行翻译才能执行。但是 Interpreter 和 Compiler 都将源代码转换为机器语言，它们唯一的区别在于转换的过程不尽相同。</p>
+<ul>
+<li>Interpreter 逐行将源代码转换为等效的机器代码。</li>
+<li>Compiler 在一开始就将所有源代码转换为机器代码。<br>如果你想了解更多它们之前的区别，推荐阅读这篇文章。</li>
+</ul>
+<blockquote>
+<p>当您阅读完上面的推荐文章后，您可能已经了解到 Babel 实际上是一个 JS Compiler ，它可以接收您编写的新版本 JS 代码并向下编译为与浏览器兼容的 JS 代码（旧版本的 JS 代码）。</p>
+</blockquote>
+<h3 id="Interpreter-和-Compiler-的优缺点"><a href="#Interpreter-和-Compiler-的优缺点" class="headerlink" title="Interpreter 和 Compiler 的优缺点"></a>Interpreter 和 Compiler 的优缺点</h3><p>Interpreter 的优点是无需等待编译即可立即执行代码。这对在浏览器中运行 JS 提供了极大的便利，因为所有用户都不想浪费时间在等待代码编译这件事上。但是，当有大量的 JS 代码需要执行时会运行地比较慢。还记得上面例子中的那一小段代码吗？代码中执行了1000次函数调用。函数 add 被调用了1000次，但他的输出保持不变。但是 Interpreter 还是逐行执行，会显得比较慢。</p>
+<p>在同样的情况下，Compiler 可以通过用2代替循环（因为 add 函数每次都是执行1 + 1）来进行一些优化。Compiler 最终给出的优化代码可以在更短的时间内执行完成。</p>
+<blockquote>
+<p>综上所述，Interpreter 可以立即开始执行代码，但不会进行优化。Compiler 虽然需要花费一些时间来编译代码，但是会生成对执行时更优的代码。</p>
+</blockquote>
+<p>好的，Interpreter 和 Compiler 必要知识我们已经了解了。现在让我们回到主题——JS 引擎。</p>
+<p>因此，考虑到编译器和解释器的优缺点，如果我们同时利用两者的优点，该怎么办？这就是 JIT(Just In Time) Compiler 的用武之地。它是 Interpreter 和 Compiler 的结合，现在大多数浏览器都在更快，更高效地实现此功能。同时 V8 引擎也使用此功能。<br><img src="/2020/02/09/runJs/t.jpg" alt></p>
+<p>在这个过程中，</p>
+<p>Parser 是一种通过各种 JavaScript 关键字来识别，分析和分类程序各个部分的解析器。它可以区分代码是一个方法还是一个变量。</p>
+<p>然后，AST(抽象语法树) 基于 Parser 的分类构造树状结构。您可以使用 AST Explorer 查看该树的结构。</p>
+<p>随后将 AST 提供给 Interpreter 生成 ByteCode。如上文所述，ByteCode 不是最底层的代码，但可以被执行。在此阶段，浏览器借助 V8 引擎执行 ByteCode 进行工作，因此用户无需等待。</p>
+<p>同时，Profiler 将查找可以被优化的代码，然后将它们传递给 Compiler。Compiler 生成优化代码的同时，浏览器暂时用 ByteCode 执行操作。并且，一旦 Compiler 生成了优化代码，优化代码则将完全替换掉临时的 ByteCode。</p>
+<p>通过这种方式，我们可以充分利用 Interpreter 和 Compiler 的优点。Interpreter 执行代码的同时，Profiler 寻找可以被优化的代码，Compiler 则创建优化的代码。然后，将 ByteCode 码替换为优化后的较为底层的代码，例如机器代码。</p>
+<blockquote>
+<p>这仅意味着性能将在逐渐提高，同时不会有阻塞执行的时间。</p>
+</blockquote>
+<h3 id="关于-ByteCode"><a href="#关于-ByteCode" class="headerlink" title="关于 ByteCode"></a>关于 ByteCode</h3><p>作为机器代码，ByteCode 不能被所有计算机理解及执行。它仍然需要像虚拟机或像 Javascript V8 引擎这样的中间件才能将其转换为机器可读的语言。这就是为什么我们的浏览器可以在上述5个阶段中借助 JavaScript 引擎在 Interpreter 中执行 ByteCode 的原因。</p>
+<p>所以您可以会有另一个问题,</p>
+<h3 id="JavaScript-是一门解释型语言吗"><a href="#JavaScript-是一门解释型语言吗" class="headerlink" title="JavaScript 是一门解释型语言吗?"></a>JavaScript 是一门解释型语言吗?</h3><p>JavaScript 是但不完全是一门解释型语言。Brendan Eich 最初是在 JavaScript 的早期阶段创建 JavaScript 引擎 “ SpiderMonkey” 的。该引擎有一个 Interpreter 来告诉浏览器该怎么执行代码。但是现在我们的引擎不仅包括了 Interpreter，还有 Compiler。我们的代码不仅可以被转换成 ByteCode，还可以被编译输出优化后的代码。因此，从技术上讲，这完全取决于引擎是如何实现的。</p>
+<p>JavaScript 引擎的整体工作原理就是这样。相信您无需学习 JavaScript 也可以理解。当然，您甚至可以在不知道 JavaScript 如何工作的情况下编写代码。但是，如果我们了解一些幕后的知识，或许能让我们编写出更好的代码。</p>
+<p>译文：梁天培<br>链接：<a href="https://juejin.im/post/5d84ae08e51d4561a705bbde" target="_blank" rel="noopener">https://juejin.im/post/5d84ae08e51d4561a705bbde</a><br>原文链接：<a href="https://blog.bitsrc.io/javascript-under-the-hood-632ccae06b27" target="_blank" rel="noopener">https://blog.bitsrc.io/javascript-under-the-hood-632ccae06b27</a></p>
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">Show TOC</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">Hide TOC</button>
+  <div class="random-toc">
+    <h2>Table of Content</h2>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#JavaScript-引擎"><span class="toc-text">JavaScript 引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JavaScript-引擎的内里"><span class="toc-text">JavaScript 引擎的内里</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Interpreter-VS-Compiler"><span class="toc-text">Interpreter VS Compiler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Interpreter-和-Compiler-的优缺点"><span class="toc-text">Interpreter 和 Compiler 的优缺点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关于-ByteCode"><span class="toc-text">关于 ByteCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JavaScript-是一门解释型语言吗"><span class="toc-text">JavaScript 是一门解释型语言吗?</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+    <a href="/2020/02/09/promise/" class="prev">&larr; Prev post 这一次，彻底弄懂 Promise 原理</a>
+  
+
+  
+
+  
+    <a href="/2020/02/08/js/" class="next">Next post TypeScript 让你不会想用回 JavaScript &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by John Dxx using
+      <a href="http://hexo.io" target="_blank" rel="noopener">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random" target="_blank" rel="noopener">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg">
+    <p id="description">这是一个由hexo搭建的博客</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont github">&#xe606;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="https://weibo.com/p/1005056013423358/home?from=page_100505&mod=TAB&is_all=1#place" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont weibo">&#xe602;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="mailto:wulidan0530@live.com">
+        
+          M
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":12};
+var unsplashConfig = {"gravity":"center"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "34495E";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+
