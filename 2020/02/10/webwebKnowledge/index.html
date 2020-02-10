@@ -167,7 +167,7 @@ da...">
 <script src="//cdn.bootcss.com/vue/2.6.6/vue.js"></script>
 
 <p>7.css实现文字模糊效果</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p &#123;</span><br><span class="line">  color: transparent;</span><br><span class="line">  text-shadow: #111 0 0 5px;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p &#123;</span><br><span class="line">  color: transparent;</span><br><span class="line">  text-shadow: <span class="comment">#111 0 0 5px;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>8.在JavaScript的世界，万物皆对象。除了 null 和 undefined ，其他基本类型数字，字符串和布尔值都有对应有包装对象。对象的一个特征是你可以在它身上直接调用方法。对于数字基本类型，当试图在其身上调用 toString 方法会失败，但用括号括起来后再调用就不会失败了，内部实现是用相应的包装对象将基本类型转为对象。所以 (1).toString() 相当于 new Number(1).toString() 。因此，你的确可以把基本类型数字，字符串，布尔等当对象使用的，只是注意语法要得体。<br>同时我们注意到，JavaScript中数字是不分浮点和整形的，所有数字其实均是浮点类型，只是把小数点省略了而以，比如你看到的1可以写成1.，这也就是为什么当你试图1.toString()时会报错，所以正确的写法应该是这样：1..toString()，或者如上面所述加上括号，这里括号的作用是纠正JS解析器，不要把1后面的点当成小数点。内部实现如上面所述，是将1.用包装对象转成对象再调用方法</p>
 

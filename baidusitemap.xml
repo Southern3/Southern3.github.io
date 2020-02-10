@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://yoursite.com/2020/02/10/vue3/</loc>
-    <lastmod>2020-02-10</lastmod>
-  </url>  <url>
     <loc>http://yoursite.com/2020/02/10/webwebKnowledge/</loc>
     <lastmod>2020-02-10</lastmod>
   </url>  <url>
-    <loc>http://yoursite.com/2020/02/09/promise/</loc>
-    <lastmod>2020-02-09</lastmod>
-  </url>  <url>
     <loc>http://yoursite.com/2020/02/09/runJs/</loc>
-    <lastmod>2020-02-09</lastmod>
+    <lastmod>2020-02-10</lastmod>
   </url>  <url>
     <loc>http://yoursite.com/2020/02/08/js/</loc>
-    <lastmod>2020-02-08</lastmod>
+    <lastmod>2020-02-10</lastmod>
+  </url>  <url>
+    <loc>http://yoursite.com/2020/02/09/promise/</loc>
+    <lastmod>2020-02-10</lastmod>
+  </url>  <url>
+    <loc>http://yoursite.com/2020/02/10/vue3/</loc>
+    <lastmod>2020-02-10</lastmod>
   </url>  <url>
     <loc>http://yoursite.com/2020/02/06/gameAll/</loc>
     <lastmod>2020-02-06</lastmod>

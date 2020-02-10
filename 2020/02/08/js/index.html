@@ -135,7 +135,7 @@
     <p class="page-title-sub">
       <span id = "post-title-date">Created at 2020-02-08</span>
       
-        <span id = "post-title-updated">Updated at 2020-02-08</span>
+        <span id = "post-title-updated">Updated at 2020-02-10</span>
       
       
       
@@ -163,20 +163,21 @@
 <p>但实际上，TypeScript的主要好处是，它可以让你的代码以JavaScript无法描述的方式进行自我描述。</p>
 <p>你可能认为，当你是一个项目的唯一开发人员时，JavaScript并没有那么糟糕，因为所有的东西都在你的脑子里，而且你有完美的记忆力，是这样吗？不，你错了。即使作为一个项目的唯一开发人员，我在编写代码时也容易出现一阵阵健忘症。</p>
 <p>现在，当我编写普通的JavaScript时，我讨厌阅读一个函数的定义来搞清楚如何使用它。我不知道它会返回什么（如果有返回值的话）或者它接受什么样的参数。我可能知道参数名称和个数，但这并不总是足够的（如下面代码所示）：</p>
-<pre><code>1 Function doTheThing() {
-2  let error = false;
+<pre><code class="bash">1 Function <span class="function"><span class="title">doTheThing</span></span>() {
+2  <span class="built_in">let</span> error = <span class="literal">false</span>;
 3
 4  // About a million lines of code that might cause an error
 5
-6   return error;
+6   <span class="built_in">return</span> error;
 7 }
 8
-9 function consumeTheThing() {
-10  let error = doTheThing();
-11  if (error) {
-12  // What do I do with the error now?
+9 <span class="keyword">function</span> <span class="function"><span class="title">consumeTheThing</span></span>() {
+10  <span class="built_in">let</span> error = doTheThing();
+11  <span class="keyword">if</span> (error) {
+12  // What <span class="keyword">do</span> I <span class="keyword">do</span> with the error now?
 13  }
-14 }</code></pre><p>这就是我想要表达的。这里的“error”是一个布尔型的值吗？当我看到第2行时，它看起来确实是这样的，但是从那里到结束的“doTheThing”行之间的一百万行代码中间的“error”呢？它可能是一个字符串，或者一个对象，或者天知道是什么。</p>
+14 }</code></pre>
+<p>这就是我想要表达的。这里的“error”是一个布尔型的值吗？当我看到第2行时，它看起来确实是这样的，但是从那里到结束的“doTheThing”行之间的一百万行代码中间的“error”呢？它可能是一个字符串，或者一个对象，或者天知道是什么。</p>
 <p>你可能会认为这种灵活性是一种资产。它可以是，但更多的时候，它是一个陷阱，引诱你进入一种容易出错的方式，在你和你的同事之间制造很多小挫折。有没有在进入别人的代码中，感到自己像在迷宫里的感觉？</p>
 <p>这就是你的代码在别人看来的样子。你可以用JavaScript编写“好”的代码，但是很少有关于该语言的内容鼓励你这样做。</p>
 <p>而这正是TypeScript的美妙所在。它不会强迫你成为一个好的开发人员。但它给了让你成为好的开发人员的工具。</p>
