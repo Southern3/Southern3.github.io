@@ -1,0 +1,348 @@
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="John Dxx">
+  
+  
+  
+  
+    <meta name="description" content="在接触到前端里，写业务逻辑时候，绝大多数都是用最基本的for，但js其实有很多种循环，在不同业务逻辑里用最合适的循环，可以提升你的代码性能，写出更优质的代码。下面我就一一列举出来吧。1.for循环常用于数组的循环遍历
+12345for(let i=0;i&lt;arr.length;i++)&#123;      //arr:循环遍历的数组      //arr[i]:数组中该下标的值 &#...">
+  
+  <title>js有哪些循环 [ 南在南方_3 ]</title>
+  
+  
+    <link rel="shortcut icon" href="/cat.jpg">
+  
+  
+  
+<link rel="stylesheet" href="/css/random.css">
+<link rel="stylesheet" href="/css/vegas.min.css">
+<link rel="stylesheet" href="/css/highlight-railscasts.css">
+<link rel="stylesheet" href="/css/jquery.fancybox.css">
+<link rel="stylesheet" href="/css/iconfont/iconfont.css">
+<link rel="stylesheet" href="/css/jquery.fancybox-thumbs.css">
+<link rel="stylesheet" href="/css/plyr.css">
+
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+<div class="side-navigate hide-area">
+  
+  
+    <div class="item next">
+      <a href="/2020/02/11/h5yh/">
+        <div class="item-icon"></div>
+      </a>
+      <div class="item-title">
+        H5性能优化方案
+      </div>
+    </div>
+  
+</div>
+<div id="outer-container" class="hide-area">
+<div id="container">
+  <div id="menu-outer" class="slide-down">
+    <div id="menu-inner">
+      <div id="brand">
+        
+        <a onClick="openUserCard()">
+          <img id="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg"/>
+          <div id="homelink">南在南方_3</div>
+        </a>
+      </div>
+      <div id="menu-list">
+        <ul>
+        
+        
+          
+            <li>
+          
+            <a href="/index.html">Home</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/archives">Archives</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/tags">Tags</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/categories">Categories</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="/about">About</a>
+            
+          </li>
+        
+          
+            <li>
+          
+            <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">Github</a>
+            
+          </li>
+        
+        </ul>
+      </div>
+      <div id="show-menu">
+        <button>Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content-outer">
+    <div id="content-inner">
+      
+      
+  
+
+  <article id="post">
+    <h1>js有哪些循环</h1>
+    <p class="page-title-sub">
+      <span id = "post-title-date">Created at 2020-02-21</span>
+      
+        <span id = "post-title-updated">Updated at 2020-02-21</span>
+      
+      
+      
+    </p>
+    
+    <pre><code>在接触到前端里，写业务逻辑时候，绝大多数都是用最基本的for，但js其实有很多种循环，在不同业务逻辑里用最合适的循环，可以提升你的代码性能，写出更优质的代码。下面我就一一列举出来吧。</code></pre><h3 id="1-for循环"><a href="#1-for循环" class="headerlink" title="1.for循环"></a>1.for循环</h3><p><strong>常用于数组的循环遍历</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="built_in">let</span> i=0;i&lt;arr.length;i++)&#123;</span><br><span class="line">      //arr:循环遍历的数组</span><br><span class="line">      //arr[i]:数组中该下标的值</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-forEach循环"><a href="#2-forEach循环" class="headerlink" title="2.forEach循环"></a>2.forEach循环</h3><p><strong>只能遍历数组，不能使用break打断循环,return falsed代表for循环中的continue</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">arr.forEach(<span class="keyword">function</span> (i,item) &#123;</span><br><span class="line">      //arr:循环遍历的数组</span><br><span class="line">      // item:数组每一项得值</span><br><span class="line">      // i：每一项对应的下标</span><br><span class="line"> &#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-for…in循环"><a href="#3-for…in循环" class="headerlink" title="3.for…in循环"></a>3.for…in循环</h3><p><strong>主要用于循环普通对象</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span>(var key <span class="keyword">in</span> obj)&#123;</span><br><span class="line">  	   //obj:对象</span><br><span class="line">      //key:对象的属性名</span><br><span class="line">      //obj[key]:对象的属性值</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span>(var i <span class="keyword">in</span> arr)&#123;</span><br><span class="line">  	   //arr:数组</span><br><span class="line">      //i:数组下标</span><br><span class="line">      //arr[i]:数组中该下标的值</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-while-do…while"><a href="#4-while-do…while" class="headerlink" title="4.while / do…while"></a>4.while / do…while</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">while</span>（判断条件）&#123;</span><br><span class="line">		//如果不满足条件，则不能进入循环</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">do</span>&#123;</span><br><span class="line">		 //循环至少会执行一次</span><br><span class="line">		&#125;<span class="keyword">while</span>（判断条件）；</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-map"><a href="#5-map" class="headerlink" title="5.map"></a>5.map</h3><p><strong>只能遍历数组，然后返回一个新的数组</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">arr.map(<span class="keyword">function</span>(i)&#123;  </span><br><span class="line">		//arr:数组</span><br><span class="line">	    //i:数组值</span><br><span class="line">	    //返回满足条件的新数组</span><br><span class="line">	    <span class="built_in">return</span> i*2;</span><br><span class="line">	 &#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-filter"><a href="#6-filter" class="headerlink" title="6.filter"></a>6.filter</h3><p><strong>返回通过过滤的元素，不改变原来的数组</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">arr.filter(<span class="keyword">function</span>(i)&#123;  </span><br><span class="line">	//arr:数组</span><br><span class="line">    //i:数组值</span><br><span class="line">    //返回过滤后的新数组</span><br><span class="line">    <span class="built_in">return</span> i&gt;1; </span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-reduce"><a href="#7-reduce" class="headerlink" title="7.reduce"></a>7.reduce</h3><p><strong>数组的累加器，最终计算出一个值</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">arr.reduce(<span class="keyword">function</span>(i,j)&#123;  </span><br><span class="line">		</span><br><span class="line">		//arr:数组</span><br><span class="line">	    //返回累加后的结果</span><br><span class="line">	    <span class="built_in">return</span> i+j;</span><br><span class="line">	&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-each"><a href="#8-each" class="headerlink" title="8.each"></a>8.each</h3><p><strong>jquery的方法，不能使用break打断循环，return falsed代表for循环中的break</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">obj.each(<span class="keyword">function</span> (i,item) &#123;</span><br><span class="line">	        // i:循环的下标</span><br><span class="line">	        // item:循环的节点</span><br><span class="line">	        // $(this):jquery对象</span><br><span class="line">	        // $(item):获得要循环的div的单个jquery对象</span><br><span class="line">	&#125;)</span><br><span class="line">	$.each(obj,<span class="keyword">function</span> (i,item) &#123;</span><br><span class="line">	        // i:下标</span><br><span class="line">	        // item:循环的节点对象</span><br><span class="line">	        // $(this):jquery对象</span><br><span class="line">	        // $(item):获得要循环的div的单个jquery对象</span><br><span class="line">	&#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+  </article>
+  <div class="random-toc-area">
+  <button class="btn-hide-toc btn-hide-toc-show" style="display: none" onclick="TOCToggle()">Show TOC</button>
+  <button class="btn-hide-toc btn-hide-toc-hide" onclick="TOCToggle()">Hide TOC</button>
+  <div class="random-toc">
+    <h2>Table of Content</h2>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-for循环"><span class="toc-text">1.for循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-forEach循环"><span class="toc-text">2.forEach循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-for…in循环"><span class="toc-text">3.for…in循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-while-do…while"><span class="toc-text">4.while &#x2F; do…while</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-map"><span class="toc-text">5.map</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-filter"><span class="toc-text">6.filter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-reduce"><span class="toc-text">7.reduce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-each"><span class="toc-text">8.each</span></a></li></ol>
+  </div>
+</div>
+
+  
+<nav id="pagination">
+  
+
+  
+
+  
+    <a href="/2020/02/11/h5yh/" class="next">Next post H5性能优化方案 &rarr;</a>
+  
+</nav>
+
+  <!-- JiaThis Button BEGIN -->
+
+<!-- JiaThis Button END -->
+
+
+      
+      
+    </div>
+  </div>
+
+  <div id="bottom-outer">
+    <div id="bottom-inner">
+      Site by John Dxx using
+      <a href="http://hexo.io" target="_blank" rel="noopener">Hexo</a> & <a href="https://github.com/stiekel/hexo-theme-random" target="_blank" rel="noopener">Random</a>
+      <br>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div id="user-card">
+  <div class="center-field">
+    <img class="avatar" src="https://c-ssl.duitang.com/uploads/item/201810/18/20181018160155_xwkch.thumb.700_0.jpeg">
+    <p id="description">博主前端练习时长两年半</p>
+    <ul class="social-icon">
+  
+  
+    <li>
+      <a href="https://github.com/Southern3/Southern3.github.io" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont github">&#xe606;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="https://weibo.com/p/1005056013423358/home?from=page_100505&mod=TAB&is_all=1#place" target="_blank" rel="noopener">
+        
+          <i class="icon iconfont weibo">&#xe602;</i>
+        
+      </a>
+    </li>
+  
+    <li>
+      <a href="1063393053@qq.com">
+        
+          M
+        
+      </a>
+    </li>
+  
+</ul>
+  </div>
+</div>
+
+
+<div id="btn-view">Hide</div>
+
+<script>
+// is trigger analytics / tongji script
+var isIgnoreHost = false;
+
+if(window && window.location && window.location.host) {
+  isIgnoreHost = ["localhost","127.0.0.1"].some(function(address){
+    return 0 === window.location.host.indexOf(address);
+  });
+}
+
+var isTriggerAnalytics = !( true && isIgnoreHost );
+
+</script>
+
+
+
+
+  
+  
+    <script src="/js/jquery-2.2.3.min.js"></script>
+  
+    <script src="/js/vegas.min.js"></script>
+  
+    <script src="/js/random.js"></script>
+  
+    <script src="/js/highlight.pack.js"></script>
+  
+    <script src="/js/jquery.mousewheel.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox.pack.js"></script>
+  
+    <script src="/js/jquery.fancybox-thumbs.js"></script>
+  
+    <script src="/js/plyr.js"></script>
+  
+
+<script>
+
+  // fancybox
+  var backgroundImages = [];
+  
+  $('#post').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox') || $(this).parent().hasClass('fancybox-thumb')) return;
+      var alt = this.alt || this.title;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'post' + i);
+    });
+  });
+  $(".fancybox").fancybox();
+
+var vegasConfig = {"preload­Image":true,"transition":["flash"],"timer":true,"delay":5000,"shuffle":true,"count":12};
+var unsplashConfig = {"gravity":"center"};
+// is show background images
+var turnoffBackgroundImage = false;
+
+
+
+
+var backgroundColor = "34495E";
+
+$(".fancybox-thumb").fancybox({
+  prevEffect: 'none',
+  nextEffect: 'none',
+  helpers: {
+    title: {
+      type: 'outside'
+    },
+    thumbs: {
+      width: 50,
+      height: 50
+    }
+  }
+});
+
+// show video with plyr
+$(".video-container iframe").each(function(i){
+  var url = $(this).attr('src');
+  var id = url.split('/').pop();
+  var plyrContainer = document.createElement('div');
+  plyrContainer.className = 'plyr';
+  var plyrElement = document.createElement('div');
+  plyrElement.dataset.videoId = id;
+  switch(true) {
+    case url.search('youtube.com') >= 0:
+      plyrElement.dataset.type = 'youtube';
+      break;
+    case url.search('vimeo.com') >= 0:
+      plyrElement.dataset.type = 'vimeo';
+      break;
+    default:
+      return;
+  };
+  plyrContainer.appendChild(plyrElement);
+  $(this).parent().html(plyrContainer);
+});
+plyr.setup('.plyr', {iconUrl: '/css/sprite.svg'});
+</script>
+</body>
+</html>
+
